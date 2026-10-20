@@ -1186,6 +1186,9 @@ private fun GraphicsPane(state: EmulationMenuUiState, viewModel: EmulationMenuVi
 @Composable
 private fun PerformancePane(state: EmulationMenuUiState, viewModel: EmulationMenuViewModel) {
     val settings = state.settings
+    MenuSwitchRow(str("perf.autoTune.label"), settings.emuCore.autoTune, description = str("perf.autoTune.description"), field = "autoTune") {
+        viewModel.updateSettings { current -> current.copy(emuCore = current.emuCore.copy(autoTune = it)) }
+    }
     SectionCard(str("perf.speedLimit.label"), field = "nominalSpeedPercent") {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
@@ -1488,6 +1491,20 @@ private fun OptionsPane(state: EmulationMenuUiState, viewModel: EmulationMenuVie
     // "▣", is one already proven to render in the shipped font -- "▩" (U+25A9) and "⏻" (U+23FB)
     // come out as tofu boxes on device.
     Spacer(Modifier.height(6.dp))
+    // Volume and Mute, the same two settings as All Settings › Audio, kept within reach while
+    // playing rather than three screens deep. Both apply instantly (applyTo's direct setters).
+    com.armsx2.ui.settings.IntSliderRow(
+        label = str("audio.volume.label"),
+        value = settings.audio.audioVolume.coerceIn(0, 150),
+        min = 0,
+        max = 150,
+        valueFormatter = { "$it%" },
+        field = "audioVolume",
+        onChange = viewModel::setVolume,
+    )
+    MenuSwitchRow(str("audio.mute.label"), settings.audio.audioMuted, field = "audioMuted") {
+        viewModel.updateSettings { current -> current.copy(audio = current.audio.copy(audioMuted = it)) }
+    }
     MenuSwitchRow(str("patches.enablePatches.label"), settings.emuCore.enablePatches, field = "enablePatches") {
         viewModel.updateSettings { current -> current.copy(emuCore = current.emuCore.copy(enablePatches = it)) }
     }
