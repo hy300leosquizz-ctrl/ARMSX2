@@ -920,6 +920,9 @@ struct Pcsx2Config
 					PCRTCOffsets : 1,
 					PCRTCOverscan : 1,
 					IntegerScaling : 1,
+					// Crop one native pixel off every edge of the displayed frame when the hardware
+					// renderer is upscaling 2x or more; the outermost row/column is often garbage there.
+					TrimUpscaledEdges : 1,
 					UseDebugDevice : 1,
 					UseDebugBlend : 1,
 					// Emit per-draw graphics-debugger labels describing the PS2 state.
@@ -986,6 +989,9 @@ struct Pcsx2Config
 					UserHacks_MergePPSprite : 1,
 					UserHacks_ForceEvenSpritePosition : 1,
 					UserHacks_NativePaletteDraw : 1,
+					// Draw a +-1 counter draw on the colclip path (shadow volumes counted by colour
+					// wrap-around) at the target's native resolution. See GSRendererHW::IsColClipCounterDraw().
+					UserHacks_NativeCounterDraws : 1,
 					UserHacks_EstimateTextureRegion : 1,
 					UserHacks_DrawBuffering : 1,
 					UserHacks_RewriteLargeSTCoords : 1,
@@ -1689,6 +1695,7 @@ struct Pcsx2Config
 		EnableFastBoot : 1,
 		EnableFastBootFastForward : 1,
 		EnableThreadPinning : 1,
+		EnablePrimeCorePlacement : 1, // GS multi-threading on a part with one prime core: the busiest thread gets it alone
 		// TODO - Vaser - where are these settings exposed in the Qt UI?
 		EnableRecordingTools : 1,
 		EnableGameFixes : 1, // enables automatic game fixes
