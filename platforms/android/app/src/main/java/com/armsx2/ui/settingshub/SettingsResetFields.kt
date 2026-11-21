@@ -36,7 +36,7 @@ internal val SETTINGS_CATEGORY_FIELDS: Map<SettingsCategory, List<String>> = map
         // it is making them go and find their Lossless.dll again.
         "lsfgEnabled", "lsfgMultiplier", "lsfgPerformance", "lsfgFp16", "lsfgFlowScale", "lsfgTargetRate",
         // ZeroFgSection lives on this tab too.
-        "zeroFgEnabled", "zeroFgMode",
+        "zeroFgEnabled", "zeroFgMode", "zeroFgMultiplier",
     ),
     // RendererTab.kt
     SettingsCategory.Graphics to listOf(

@@ -815,10 +815,13 @@ data class GraphicsSettings(
      *  renderer's. Switches in game: off gives the window back to the renderer, on takes it again
      *  (reopening the renderer once if it started with ZeroFG off). Github flavour only, like LSFG. */
     val zeroFgEnabled: Boolean = false,
-    /** EmuCore/GS/ZeroFGMode — ZeroFG's mode: 0 Zero, 1 ReallyZero (lighter), 6 ZeroGS and 7 ReallyZeroGS
-     *  (the same engines plus what only the GS gives: the content break, and in ZeroGS the HUD layer).
-     *  Switches in game, like [zeroFgEnabled]. */
-    val zeroFgMode: Int = 0,
+    /** EmuCore/GS/ZeroFGMode — ZeroFG's mode (1.2: one engine, RZ+): 1 ZeroFG, 7 ZeroGS (the same engine
+     *  plus what only the GS gives: the content break and the HUD layer). The 1.1 modes still saved run on:
+     *  0 as 1, 6 as 7. Switches in game, like [zeroFgEnabled]. */
+    val zeroFgMode: Int = 1,
+    /** EmuCore/GS/ZeroFGMultiplier — frames on screen per game frame: 2, 3 or 4, capped by what the
+     *  display refresh holds. Switches in game without a reconnect. */
+    val zeroFgMultiplier: Int = 2,
     /** Tweaked shader parameters, as `preset path -> (parameter name -> value)`.
      *
      *  Sparse: a parameter the user hasn't touched is simply absent, and the author's own
@@ -1644,6 +1647,7 @@ data class Settings(
                 lsfgTargetRate = intAt("EmuCore/GS/LsfgTargetRate") ?: this.graphics.lsfgTargetRate,
                 zeroFgEnabled = boolAt("EmuCore/GS/ZeroFGEnabled") ?: this.graphics.zeroFgEnabled,
                 zeroFgMode = intAt("EmuCore/GS/ZeroFGMode") ?: this.graphics.zeroFgMode,
+                zeroFgMultiplier = intAt("EmuCore/GS/ZeroFGMultiplier") ?: this.graphics.zeroFgMultiplier,
                 shaderChainParams = strAt("EmuCore/GS/ShaderChainParams")?.let { raw ->
                 // Hand-editable file, so a malformed blob is a real possibility: keep the
                 // rest of the recovered settings rather than throwing the lot away.
@@ -1829,6 +1833,7 @@ data class Settings(
         put("EmuCore/GS", "LsfgTargetRate", "int", graphics.lsfgTargetRate.coerceIn(0, 1000).toString())
         put("EmuCore/GS", "ZeroFGEnabled", "bool", graphics.zeroFgEnabled.toString())
         put("EmuCore/GS", "ZeroFGMode", "int", graphics.zeroFgMode.coerceIn(0, 7).toString())
+        put("EmuCore/GS", "ZeroFGMultiplier", "int", graphics.zeroFgMultiplier.coerceIn(2, 4).toString())
         // Parameter overrides, as one opaque JSON blob. Nothing in emucore reads this key —
         // there is no GSConfig field behind it, and the live values reach the renderer via
         // the push below, not through here. It is written so the map survives the same
@@ -2029,6 +2034,7 @@ data class Settings(
             graphics.lsfgTargetRate != other.graphics.lsfgTargetRate ||
             graphics.zeroFgEnabled != other.graphics.zeroFgEnabled ||
             graphics.zeroFgMode != other.graphics.zeroFgMode ||
+            graphics.zeroFgMultiplier != other.graphics.zeroFgMultiplier ||
             osd.osdPosition != other.osd.osdPosition ||
             graphics.casMode != other.graphics.casMode ||
             graphics.casSharpness != other.graphics.casSharpness ||
@@ -2293,6 +2299,7 @@ data class Settings(
         put("lsfgTargetRate", graphics.lsfgTargetRate)
         put("zeroFgEnabled", graphics.zeroFgEnabled)
         put("zeroFgMode", graphics.zeroFgMode)
+        put("zeroFgMultiplier", graphics.zeroFgMultiplier)
         put("casMode", graphics.casMode)
         put("casSharpness", graphics.casSharpness)
         put("upscaler", graphics.upscaler)
@@ -2700,6 +2707,7 @@ data class Settings(
                     lsfgTargetRate = json.optInt("lsfgTargetRate", def.graphics.lsfgTargetRate),
                     zeroFgEnabled = json.optBoolean("zeroFgEnabled", def.graphics.zeroFgEnabled),
                     zeroFgMode = json.optInt("zeroFgMode", def.graphics.zeroFgMode),
+                    zeroFgMultiplier = json.optInt("zeroFgMultiplier", def.graphics.zeroFgMultiplier),
                     casMode = json.optInt("casMode", def.graphics.casMode),
                     casSharpness = json.optInt("casSharpness", def.graphics.casSharpness),
                     upscaler = json.optInt("upscaler", def.graphics.upscaler),
@@ -2954,6 +2962,7 @@ data class Settings(
             if (current.graphics.lsfgTargetRate      != base.graphics.lsfgTargetRate)      j.put("lsfgTargetRate", current.graphics.lsfgTargetRate)
             if (current.graphics.zeroFgEnabled       != base.graphics.zeroFgEnabled)       j.put("zeroFgEnabled", current.graphics.zeroFgEnabled)
             if (current.graphics.zeroFgMode          != base.graphics.zeroFgMode)          j.put("zeroFgMode", current.graphics.zeroFgMode)
+            if (current.graphics.zeroFgMultiplier    != base.graphics.zeroFgMultiplier)    j.put("zeroFgMultiplier", current.graphics.zeroFgMultiplier)
             if (current.graphics.casMode             != base.graphics.casMode)             j.put("casMode", current.graphics.casMode)
             if (current.graphics.casSharpness        != base.graphics.casSharpness)        j.put("casSharpness", current.graphics.casSharpness)
             if (current.graphics.upscaler            != base.graphics.upscaler)            j.put("upscaler", current.graphics.upscaler)
@@ -3307,6 +3316,7 @@ data class Settings(
                 lsfgTargetRate = if (overrides.has("lsfgTargetRate")) overrides.getInt("lsfgTargetRate") else base.graphics.lsfgTargetRate,
                 zeroFgEnabled = if (overrides.has("zeroFgEnabled")) overrides.getBoolean("zeroFgEnabled") else base.graphics.zeroFgEnabled,
                 zeroFgMode = if (overrides.has("zeroFgMode")) overrides.getInt("zeroFgMode") else base.graphics.zeroFgMode,
+                zeroFgMultiplier = if (overrides.has("zeroFgMultiplier")) overrides.getInt("zeroFgMultiplier") else base.graphics.zeroFgMultiplier,
                 casMode = if (overrides.has("casMode")) overrides.getInt("casMode") else base.graphics.casMode,
                 casSharpness = if (overrides.has("casSharpness")) overrides.getInt("casSharpness") else base.graphics.casSharpness,
                 upscaler = if (overrides.has("upscaler")) overrides.getInt("upscaler") else base.graphics.upscaler,

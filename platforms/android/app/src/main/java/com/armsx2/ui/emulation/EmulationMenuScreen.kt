@@ -1356,8 +1356,11 @@ private fun PerformancePane(state: EmulationMenuUiState, viewModel: EmulationMen
     com.armsx2.ui.common.ZeroFgEmulationCard(
         enabled = settings.graphics.zeroFgEnabled,
         mode = settings.graphics.zeroFgMode,
-    ) { on, mode ->
-        viewModel.updateSettings { it.copy(graphics = it.graphics.copy(zeroFgEnabled = on, zeroFgMode = mode)) }
+        multiplier = settings.graphics.zeroFgMultiplier,
+    ) { on, mode, multiplier ->
+        viewModel.updateSettings {
+            it.copy(graphics = it.graphics.copy(zeroFgEnabled = on, zeroFgMode = mode, zeroFgMultiplier = multiplier))
+        }
         com.armsx2.runtime.MainActivityRuntime.surface.value?.applyFrameRatePreference()
     }
     com.armsx2.ui.common.LsfgEmulationCard(

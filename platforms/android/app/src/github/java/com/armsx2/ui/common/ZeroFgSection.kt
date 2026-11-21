@@ -8,22 +8,26 @@ import com.armsx2.ui.settings.SettingsDivider
 import com.armsx2.ui.settings.ToggleRow
 
 /**
- * ZeroFG frame-generation rows: the master toggle and, while it is on, the engine.
+ * ZeroFG frame-generation rows: the master toggle and, while it is on, the mode and the multiplier.
  *
  * Presentation only, like [LsfgSection]: the caller wires [onChange] to its own settings tier.
- * ZeroFG switches in game, so the two can be compared on the same scene, and so can its engines.
+ * ZeroFG switches in game, so it can be compared with LSFG on the same scene, and so can its modes.
  *
  * Github flavour only, beside LSFG so the two can be compared in the same build; the play source
  * set has a stub of the same name.
  */
-/** The saved ZeroFG mode of each option the settings offer, in their order. */
-private val ZEROFG_MODES = intArrayOf(0, 1, 6, 7)
+/** The saved ZeroFG mode of each option the settings offer, in their order: ZeroFG 1, ZeroGS 7. */
+private val ZEROFG_MODES = intArrayOf(1, 7)
+
+/** The multipliers the settings offer, in their order. */
+private val ZEROFG_MULTIPLIERS = intArrayOf(2, 3, 4)
 
 @Composable
 fun ZeroFgSection(
     enabled: Boolean,
     mode: Int,
-    onChange: (enabled: Boolean, mode: Int) -> Unit,
+    multiplier: Int,
+    onChange: (enabled: Boolean, mode: Int, multiplier: Int) -> Unit,
 ) {
     if (!BuildConfig.ZEROFG) return
 
@@ -31,23 +35,25 @@ fun ZeroFgSection(
         label = str("perf.zerofg.label"),
         value = enabled,
         description = str("perf.zerofg.description"),
-    ) { on -> onChange(on, mode) }
+    ) { on -> onChange(on, mode, multiplier) }
 
     if (enabled) {
         SettingsDivider()
-        // Product names, not translated. The saved mode is EmuCore/GS/ZeroFGMode: Zero 0, ReallyZero 1, ZeroGS 6, ReallyZeroGS 7
-        // (any other saved value runs, and shows, as Zero).
+        // Product names, not translated. The saved mode is EmuCore/GS/ZeroFGMode: ZeroFG 1, ZeroGS 7; the 1.1 modes still saved
+        // show (and run) as their 1.2 one: 0 as ZeroFG, 6 as ZeroGS.
         SegmentedRow(
             label = str("perf.zerofg.mode.label"),
-            options = listOf("Zero", "ReallyZero", "ZeroGS", "ReallyZeroGS"),
-            selectedIndex = when (mode) {
-                1 -> 1
-                6 -> 2
-                7 -> 3
-                else -> 0
-            },
+            options = listOf("ZeroFG", "ZeroGS"),
+            selectedIndex = if (mode >= 6) 1 else 0,
             description = str("perf.zerofg.mode.description"),
-        ) { index -> onChange(enabled, ZEROFG_MODES[index]) }
+        ) { index -> onChange(enabled, ZEROFG_MODES[index], multiplier) }
+        SettingsDivider()
+        SegmentedRow(
+            label = str("perf.zerofg.multiplier.label"),
+            options = listOf("x2", "x3", "x4"),
+            selectedIndex = (multiplier.coerceIn(2, 4) - 2),
+            description = str("perf.zerofg.multiplier.description"),
+        ) { index -> onChange(enabled, mode, ZEROFG_MULTIPLIERS[index]) }
     }
 }
 
@@ -59,10 +65,11 @@ fun ZeroFgSection(
 fun ZeroFgEmulationCard(
     enabled: Boolean,
     mode: Int,
-    onChange: (enabled: Boolean, mode: Int) -> Unit,
+    multiplier: Int,
+    onChange: (enabled: Boolean, mode: Int, multiplier: Int) -> Unit,
 ) {
     if (!BuildConfig.ZEROFG) return
     com.armsx2.ui.emulation.SectionCard(str("perf.zerofg.label")) {
-        ZeroFgSection(enabled, mode, onChange)
+        ZeroFgSection(enabled, mode, multiplier, onChange)
     }
 }

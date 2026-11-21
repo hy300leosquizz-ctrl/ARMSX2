@@ -335,18 +335,18 @@ ZeroFGCutState g_zcut;
 constexpr float kZeroFGBreakOverlap = 0.5f;
 } // namespace
 
-// The GS hints (this content break and the static picture) belong to the GS modes only, ZeroGS (6) and ReallyZeroGS (7): Zero and
-// ReallyZero stay the engine every host gets, with nothing from the GS, so a hint that misfires in some game never touches them.
+// The GS hints (this content break and the static picture) belong to ZeroGS only (7; a 1.1 ZeroGS saved as 6 too): ZeroFG stays
+// the engine every host gets, with nothing from the GS, so a hint that misfires in some game never touches it.
 static bool ZeroFGGSHints()
 {
 	return GSConfig.ZeroFGEnabled && GSConfig.ZeroFGMode >= 6;
 }
 
-// ZeroGS (6) carries the HUD layer: the HUD rule and its side pass run, and the displayed frame's side pair goes to ZeroFG with the
-// frame (ZeroFGMergeHudPlanes). ReallyZeroGS (7) keeps the GS cut only (the layer is a third of its cost).
+// ZeroGS also carries the HUD layer (1.2: RZ+ with the layer at every phase of x2, x3 and x4): the HUD rule and its side pass run,
+// and the displayed frame's side pair goes to ZeroFG with the frame (ZeroFGMergeHudPlanes). RZ+'s own HUD hold and cut test stay on.
 static bool ZeroFGHudProduction()
 {
-	return GSConfig.ZeroFGEnabled && GSConfig.ZeroFGMode == 6;
+	return ZeroFGGSHints();
 }
 
 // ZeroGS: the side pair of the target each circuit shows (P, W), set by GetOutput for ZeroFGMergeHudPlanes; null without a live one.

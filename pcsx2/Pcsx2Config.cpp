@@ -970,6 +970,7 @@ bool Pcsx2Config::GSOptions::OptionsAreEqual(const GSOptions& right) const
 		OpEqu(LsfgTargetRate) &&
 		OpEqu(ZeroFGEnabled) &&
 		OpEqu(ZeroFGMode) &&
+		OpEqu(ZeroFGMultiplier) &&
 
 
 		OpEqu(Adapter) &&
@@ -1256,6 +1257,7 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapEntryEx(ZeroFGEnabled, "ZeroFGEnabled");
 	// Bitfield, not Entry: a u8, as LsfgMultiplier above.
 	SettingsWrapBitfieldEx(ZeroFGMode, "ZeroFGMode");
+	SettingsWrapBitfieldEx(ZeroFGMultiplier, "ZeroFGMultiplier");
 
 
 	SettingsWrapEntry(Adapter);

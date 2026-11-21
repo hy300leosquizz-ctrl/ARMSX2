@@ -12,7 +12,8 @@ import androidx.compose.runtime.Composable
 fun ZeroFgSection(
     enabled: Boolean,
     mode: Int,
-    onChange: (enabled: Boolean, mode: Int) -> Unit,
+    multiplier: Int,
+    onChange: (enabled: Boolean, mode: Int, multiplier: Int) -> Unit,
 ) {
 }
 
@@ -21,6 +22,7 @@ fun ZeroFgSection(
 fun ZeroFgEmulationCard(
     enabled: Boolean,
     mode: Int,
-    onChange: (enabled: Boolean, mode: Int) -> Unit,
+    multiplier: Int,
+    onChange: (enabled: Boolean, mode: Int, multiplier: Int) -> Unit,
 ) {
 }
